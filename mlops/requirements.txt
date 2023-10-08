@@ -1,0 +1,6 @@
+python-dotenv
+pandas
+tqdm
+financedatabase
+optuna
+mlflow

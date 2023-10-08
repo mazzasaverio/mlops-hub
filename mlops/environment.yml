@@ -1,0 +1,5 @@
+name: training
+channels:
+  - defaults
+dependencies:
+  - python=3.10
