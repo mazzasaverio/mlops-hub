@@ -1,7 +1,7 @@
 # cv_setup.py
 import sys
 from sklearn.model_selection import KFold, StratifiedKFold
-from validation.model_validation import CombPurgedKFoldCV
+from src.validation.model_validation import CombPurgedKFoldCV
 import pandas as pd
 
 def initialize_cv_method(cv_method: str, X: pd.DataFrame, y: pd.Series, n_splits=5, n_test_splits=1, embargo_td=2):

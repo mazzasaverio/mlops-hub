@@ -1,9 +1,9 @@
 # main.py
-from utils.utils import load_config, load_dataset
+from utils.utils_general import load_config, load_dataset
 from experiments.mlflow_optuna_init import initialize_mlflow, initialize_optuna
 from validation.cv_setup import initialize_cv_method
 from experiments.optuna_objective import objective
-from utils.utils import prepare_features_and_target
+from utils.utils_general import prepare_features_and_target
 import os
 from dotenv import load_dotenv
 import warnings

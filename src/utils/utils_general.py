@@ -3,6 +3,21 @@ import os
 import sys
 import yaml
 import pandas as pd
+from dotenv import load_dotenv
+
+load_dotenv()
+
+def get_project_directory():
+    current_directory = os.getcwd()
+    
+    # Define environment-specific directories
+    env_directories = {
+        '/content': '/content/',
+        '/kaggle/working': '/kaggle/'
+    }
+    
+    return env_directories.get(current_directory, os.getenv("ROOT_PATH"))
+
 
 def load_config(path: str) -> dict:
     try:
