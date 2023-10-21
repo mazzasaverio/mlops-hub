@@ -3,6 +3,8 @@ archive/
 repo_utils_scripts/
 mlruns/
 mlops/mlruns
+
+kaggle.json
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
