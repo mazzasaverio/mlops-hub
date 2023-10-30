@@ -12,6 +12,11 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
+# ---------------------------------------------------------------------------- #
+#                                   general                                    #
+# ---------------------------------------------------------------------------- #
+
+
 def load_config(path: str) -> dict:
     try:
         with open(path, "r") as f:
@@ -240,3 +245,39 @@ def log_training_details(logger, model, trial, model_name):
 
     logger.info(f"{'Fold':<5} {'|':<2} {'MAE':<20}")
     logger.info(f"{'-----':<5} {'|':<2} {'--------------------':<20}")
+
+
+# ---------------------------------------------------------------------------- #
+#                                   models                                     #
+# ---------------------------------------------------------------------------- #
+
+
+def create_model(trial, model_class, static_params, dynamic_params):
+    dynamic_params_values = {}
+    for param_name, suggestions in dynamic_params.items():
+        suggestion_type = suggestions["type"]
+        if suggestion_type == "int":
+            dynamic_params_values[param_name] = trial.suggest_int(
+                param_name, suggestions["low"], suggestions["high"]
+            )
+        elif suggestion_type == "float":
+            dynamic_params_values[param_name] = trial.suggest_float(
+                param_name, suggestions["low"], suggestions["high"]
+            )
+        elif suggestion_type == "categorical":
+            dynamic_params_values[param_name] = trial.suggest_categorical(
+                param_name, suggestions["choices"]
+            )
+        elif suggestion_type == "discrete_uniform":
+            dynamic_params_values[param_name] = trial.suggest_discrete_uniform(
+                param_name, suggestions["low"], suggestions["high"], suggestions["q"]
+            )
+        elif suggestion_type == "loguniform":
+            dynamic_params_values[param_name] = trial.suggest_loguniform(
+                param_name, suggestions["low"], suggestions["high"]
+            )
+        else:
+            raise ValueError(f"Unsupported suggestion type: {suggestion_type}")
+
+    model_params = {**static_params, **dynamic_params_values}
+    return model_class(**model_params)
