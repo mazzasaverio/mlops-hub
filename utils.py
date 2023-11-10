@@ -4,6 +4,7 @@ from datetime import datetime
 import os
 import yaml
 import pandas as pd
+import numpy as np
 import mlflow
 import subprocess
 from termcolor import colored
@@ -62,6 +63,17 @@ def setup_kaggle(kaggle_json_path: Path):
     except ImportError:
         logger.info("Installing Kaggle package...")
         subprocess.run(["pip", "install", "-q", "kaggle"])
+
+
+# if download_kaggle_data:
+#     dataset_name = "ravi20076/optiver-memoryreduceddatasets"
+#     kaggle_json_path = os.path.join(path_project_dir, "kaggle.json")
+#     get_data(
+#         kaggle_json_path,
+#         path_data_project_dir,
+#         dataset_name=dataset_name,
+#         specific_file=None,
+#     )
 
 
 def make_directories(dir_path: Path):
@@ -351,11 +363,9 @@ def create_model(trial, model_class, static_params, dynamic_params):
 # ---------------------------------------------------------------------------- #
 #                                    mlflow                                    #
 # ---------------------------------------------------------------------------- #
-
-
 def experiments_data(client, list_experiment_id=None, save_df=None, list_columns=None):
     """
-    Ogni volta che viene chiamata questa funzione legge tutti gli esperimenti e ritorna una nuova versione del file con tutti gli esperimenti storicizzati
+    Every time this function is called, it reads all experiments and a new version of the file returns with all the historical experiments
     """
     experiments = client.search_experiments()
     all_runs_data = []
@@ -379,11 +389,13 @@ def experiments_data(client, list_experiment_id=None, save_df=None, list_columns
                 for key, value in run_info.data.params.items():
                     run_data[f"{key}"] = value
 
+                # Add tags to run_data
+                for key, value in run_info.data.tags.items():
+                    run_data[f"{key}"] = value
+
                 all_runs_data.append(run_data)
 
     df_runs_new = pd.DataFrame(all_runs_data)
-
-    df_runs_new = df_runs_new[~df_runs_new["fold_number"].isna()]
 
     if list_columns:
         df_runs_new = df_runs_new[list_columns]
@@ -396,3 +408,65 @@ def experiments_data(client, list_experiment_id=None, save_df=None, list_columns
         print(f"DataFrame saved to {csv_filename}, Shape: {df_runs_new.shape}")
 
     return df_runs_new
+
+
+# ---------------------------------------------------------------------------- #
+#                              reduce memory usage                             #
+# ---------------------------------------------------------------------------- #
+
+
+def reduce_mem_usage(df, verbose=0):
+    """
+    Iterate through all numeric columns of a dataframe and modify the data type
+    to reduce memory usage.
+    """
+
+    start_mem = df.memory_usage().sum() / 1024**2
+
+    for col in df.columns:
+        if col not in ["time_id", "date_id", "target", "stock_id", "seconds_in_bucket"]:
+            col_type = df[col].dtype
+
+            if (col_type != object) and (col != "target"):
+                c_min = df[col].min()
+                c_max = df[col].max()
+                if str(col_type)[:3] == "int":
+                    if c_min > np.iinfo(np.int8).min and c_max < np.iinfo(np.int8).max:
+                        df[col] = df[col].astype(np.int8)
+                    elif (
+                        c_min > np.iinfo(np.int16).min
+                        and c_max < np.iinfo(np.int16).max
+                    ):
+                        df[col] = df[col].astype(np.int16)
+                    elif (
+                        c_min > np.iinfo(np.int32).min
+                        and c_max < np.iinfo(np.int32).max
+                    ):
+                        df[col] = df[col].astype(np.int32)
+                    elif (
+                        c_min > np.iinfo(np.int64).min
+                        and c_max < np.iinfo(np.int64).max
+                    ):
+                        df[col] = df[col].astype(np.int64)
+                else:
+                    if (
+                        c_min > np.finfo(np.float16).min
+                        and c_max < np.finfo(np.float16).max
+                    ):
+                        df[col] = df[col].astype(np.float32)
+                    elif (
+                        c_min > np.finfo(np.float32).min
+                        and c_max < np.finfo(np.float32).max
+                    ):
+                        df[col] = df[col].astype(np.float32)
+                    else:
+                        df[col] = df[col].astype(np.float32)
+
+        if verbose:
+            logger.info(f"Memory usage of dataframe is {start_mem:.2f} MB")
+            end_mem = df.memory_usage().sum() / 1024**2
+            logger.info(f"Memory usage after optimization is: {end_mem:.2f} MB")
+            decrease = 100 * (start_mem - end_mem) / start_mem
+            logger.info(f"Decreased by {decrease:.2f}%")
+
+    return df
