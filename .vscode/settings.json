@@ -1,0 +1,7 @@
+{
+  "python.analysis.extraPaths": [
+    "./src/utils",
+    "./src/feat_engineering",
+    "./src/validation"
+  ]
+}

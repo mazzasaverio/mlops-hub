@@ -4,6 +4,9 @@ repo_utils_scripts/
 mlruns/
 mlops/mlruns
 
+*.pkl
+*.csv
+*csv
 kaggle.json
 # Byte-compiled / optimized / DLL files
 __pycache__/
