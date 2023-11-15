@@ -5,10 +5,11 @@ import boto3
 from botocore.exceptions import NoCredentialsError
 import os
 import pickle
-import numpy as np
+
 from mlflow.exceptions import MlflowException
 
 from collections import OrderedDict
+from utils_models import EnsembleModel
 
 
 def get_or_create_experiment(client, experiment_name, artifact_location):
@@ -102,27 +103,6 @@ def download_and_load_model(s3_client, s3_path):
         print("Credentials not available.")
     except Exception as e:
         print(f"Error occurred while loading model from {s3_path}: {e}")
-
-
-class EnsembleModel:
-    def __init__(self, models):
-        self.models = models
-        self.feature_names = self.models[0].feature_name_
-
-        # Since all models have the same parameters, take the parameters of the first model
-        self.model_params = self.models[0].get_params()
-
-    def predict(self, X):
-        # Average predictions from all models
-        predictions = np.mean([model.predict(X) for model in self.models], axis=0)
-        return predictions
-
-    def get_feature_names(self):
-        return self.feature_names
-
-    def get_params(self):
-        # Returns the parameters of the first model
-        return self.model_params
 
 
 def load_models_and_create_ensemble(s3_client, model_paths):
