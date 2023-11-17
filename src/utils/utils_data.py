@@ -18,6 +18,7 @@ class PathManager:
         self.path_experiments_dir = (
             "http://ec2-13-38-228-107.eu-west-3.compute.amazonaws.com:5000"
         )
+
         self.path_artifact_location = (
             f"s3://mlflow-v1/kaggle_optiver_trading_at_the_close"
         )

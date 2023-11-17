@@ -27,7 +27,8 @@ def log_feature_importance(trial_number, model, X, fold_n, exp_purpose, exp_date
     # Save the updated DataFrame to CSV
     importance_df.to_csv(csv_path, index=False)
 
-    mlflow.log_artifact(csv_path)
+
+#    mlflow.log_artifact(csv_path)
 
 
 def aggregate_feature_importance(list_files_feat_importance):
