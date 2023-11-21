@@ -250,3 +250,15 @@ def experiments_data(client, list_experiment_id=None, save_df=None, list_columns
         df_runs_new = df_runs_new[list_columns]
 
     return df_runs_new
+
+
+def list_path_models(client, list_experiment_id, run_name_startswith):
+    df_exp = experiments_data(
+        client, list_experiment_id=list_experiment_id, save_df=None, list_columns=None
+    )
+
+    return list(
+        df_exp[df_exp["mlflow.runName"].str.startswith(run_name_startswith)][
+            "model_path"
+        ]
+    )

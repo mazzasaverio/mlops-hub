@@ -58,7 +58,7 @@ class PathManager:
 
         self.path_dataset_processed = self.path_root_project / "data" / "processed"
 
-        self.path_model_production = self.path_root_project
+        self.path_model_production = self.data_dir / "models"
         # path_dataset_train = path_dataset_processed / "train.csv"
         # path_dataset_test = path_dataset_processed / "test.csv"
 
