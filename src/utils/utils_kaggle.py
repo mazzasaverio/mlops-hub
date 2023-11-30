@@ -2,6 +2,37 @@ from pathlib import Path
 import shutil
 import subprocess
 import os
+from zipfile import ZipFile
+
+
+def download_and_zip(package_name, download_dir, zip_name):
+    """
+    Downloads a Python package and zips its contents.
+
+    :param package_name: Name of the Python package to download.
+    :param download_dir: Directory where the package will be downloaded.
+    :param zip_name: Name of the output zip file.
+
+    # Usage
+    download_and_zip('polars', './polars', 'polars.zip')
+    """
+    # Create download directory if it doesn't exist
+    if not os.path.exists(download_dir):
+        os.makedirs(download_dir)
+
+    # Execute the pip download command
+    os.system(f"pip download {package_name} -d {download_dir}")
+
+    # Create a ZipFile Object
+    with ZipFile(zip_name, "w") as zipObj:
+        # Iterate over all the files in the directory
+        for folderName, subfolders, filenames in os.walk(download_dir):
+            for filename in filenames:
+                if filename != zip_name:
+                    # Create complete filepath of file in directory
+                    filePath = os.path.join(folderName, filename)
+                    # Add file to zip
+                    zipObj.write(filePath, os.path.relpath(filePath, download_dir))
 
 
 def setup_kaggle(kaggle_json_path: Path):
